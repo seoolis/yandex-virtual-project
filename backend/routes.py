@@ -1,5 +1,6 @@
 from flask import Flask, request, jsonify
 from flask_sqlalchemy import SQLAlchemy
+from storage import upload_file
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db:5432/mydb'
@@ -26,6 +27,14 @@ def create_product():
     db.session.add(p)
     db.session.commit()
     return jsonify({"id": p.id}), 201
+
+@app.route("/products/<int:id>/upload", methods=["POST"])
+def upload_product_image(id):
+    file = request.files['file']
+    file_path = f"product_{id}_{file.filename}"
+    file.save(file_path)
+    url = upload_file(file_path)
+    return jsonify({"url": url})
 
 @app.route("/products", methods=["GET"])
 def get_products():
